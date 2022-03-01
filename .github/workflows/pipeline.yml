@@ -1,0 +1,45 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+jobs:
+  deploy_pipeline:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: npm install backend
+        run: npm install
+      - name: npm install frontend
+        working-directory: ./phonebook
+        run: npm install
+      - name: lint
+        run: npm run eslint
+      - name: build:ui
+        run: npm run build:ui
+      - name: deploy
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "fullstackopen-part11-21"
+          heroku_email: "miika.nissi@student.hamk.fi"
+          healthcheck: "https://fullstackopen-part11-21.herokuapp.com/health"
+          checkstring: "ok"
+          rollbackonhealthcheckfailed: true
+          delay: 5
+      - uses: actions/checkout@v2
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+        uses: anothrNick/github-tag-action@1.33.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
