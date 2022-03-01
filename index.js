@@ -24,6 +24,14 @@ app.use(morgan("postFormat"));
 
 const Person = require("./models/person");
 
+app.get('/health', (_req, res) => {
+  res.send('ok')
+})
+
+app.get('/version', (_req, res) => {
+  res.send('1')
+})
+
 app.get("/info", (_request, response, next) => {
   "use strict";
   Person.countDocuments({})
