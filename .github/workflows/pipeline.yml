@@ -21,7 +21,7 @@ jobs:
         working-directory: ./phonebook
         run: npm install
       - name: lint
-        run: npm run eslint
+        run: npm run lint
       - name: build:ui
         run: npm run build:ui
       - name: deploy
